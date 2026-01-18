@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 旗艦戰情室 - 容錯優化版</title>
+    <title>2026 旗艦戰情室 - Pro Grid</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap');
         
         body { 
             background-color: #f5f5f7; 
@@ -15,75 +15,74 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板區 (復刻 image_43fb44) */
+        /* 頂部看板 (復刻 image_43fb44) */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 15px;
-            margin-bottom: 50px;
-            padding-top: 20px;
+            margin-bottom: 40px;
         }
         
         .stat-item {
             background: #ffffff;
             border-radius: 20px;
-            padding: 25px 10px;
+            padding: 20px 10px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
-        .stat-label { font-size: 0.75rem; color: #86868b; font-weight: 600; margin-bottom: 8px; }
-        .stat-value { font-size: 2.2rem; font-weight: 700; line-height: 1; }
-        .stat-pct { font-size: 0.8rem; color: #86868b; margin-top: 6px; }
+        .stat-label { font-size: 0.7rem; color: #86868b; font-weight: 600; margin-bottom: 5px; }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .stat-pct { font-size: 0.75rem; color: #86868b; margin-top: 5px; }
 
-        /* 名單網格：純文字陣列 */
-        .name-grid { 
+        /* 格子陣列系統 */
+        .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
-            gap: 25px 12px;
-            padding: 0 10px;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
+            gap: 12px;
         }
         
-        .name-btn {
+        .name-card {
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 1.05rem;
+            padding: 15px 5px;
+            border-radius: 14px;
             text-align: center;
-            border: none;
-            background: none;
-            outline: none;
-            padding: 5px;
+            font-size: 0.95rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
         }
 
-        /* 未到：紅潤粗體 + 輕微發光 (視覺焦點) */
-        .status-absent {
+        /* 未到：粉紅背景 + 紅潤粗體 (復刻 image_4315e8 質感) */
+        .card-absent {
+            background-color: #fff1f2; /* 淺粉紅 */
             color: #e11d48; /* 玫瑰紅 */
-            font-weight: 800;
-            text-shadow: 0 0 10px rgba(225, 29, 72, 0.15);
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(225, 29, 72, 0.1);
         }
 
-        /* 已到：霧面灰色 (低干擾但可見，可隨時點回來) */
-        .status-present {
-            color: #94a3b8; 
-            font-weight: 400;
+        /* 已到：純白背景 + 霧面灰字 (復刻 image_438e86 容錯感) */
+        .card-present {
+            background-color: #ffffff;
+            color: #94a3b8;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
         }
 
-        .name-btn:active { transform: scale(0.8); opacity: 0.5; }
+        .name-card:active { transform: scale(0.9); opacity: 0.7; }
         
         .section-header {
             font-size: 0.8rem;
             font-weight: 700;
             color: #86868b;
-            margin: 35px 0 20px 10px;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            margin: 30px 0 15px 5px;
+            letter-spacing: 0.05em;
         }
 
         .divider { border-color: #e5e5e7; margin: 3rem 0; }
     </style>
 </head>
-<body class="p-6 md:p-12">
-    <div class="max-w-4xl mx-auto">
+<body class="p-5 md:p-12">
+    <div class="max-w-5xl mx-auto">
         
         <div class="dashboard">
             <div class="stat-item">
@@ -105,12 +104,12 @@
 
         <div id="main-content">
             <div class="section-header">! 待報到名單 (未到)</div>
-            <div id="not-arrived-list" class="name-grid"></div>
+            <div id="not-arrived-list" class="member-grid"></div>
 
             <hr class="divider">
 
-            <div class="section-header">✓ 已入座名單 (可點擊還原)</div>
-            <div id="arrived-list" class="name-grid"></div>
+            <div class="section-header">✓ 已入座名單 (點擊可還原)</div>
+            <div id="arrived-list" class="member-grid"></div>
         </div>
     </div>
 
@@ -141,14 +140,14 @@
             document.getElementById('not-pct').innerText = total ? Math.round((notArrived.length / total) * 100) + '%' : '0%';
             document.getElementById('arr-pct').innerText = total ? Math.round((arrived.length / total) * 100) + '%' : '0%';
 
-            // 更新未到清單
+            // 更新紅潤格子
             document.getElementById('not-arrived-list').innerHTML = notArrived.map(emp => `
-                <button onclick="toggle('${emp.name}', true)" class="name-btn status-absent">${emp.name}</button>
+                <div onclick="toggle('${emp.name}', true)" class="name-card card-absent">${emp.name}</div>
             `).join('');
 
-            // 更新已到清單
+            // 更新純白格子
             document.getElementById('arrived-list').innerHTML = arrived.map(emp => `
-                <button onclick="toggle('${emp.name}', false)" class="name-btn status-present">${emp.name}</button>
+                <div onclick="toggle('${emp.name}', false)" class="name-card card-present">${emp.name}</div>
             `).join('');
         }
 
