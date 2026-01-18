@@ -3,76 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 點名系統 - 寬版精緻格子</title>
+    <title>2026 點名戰情室 - Apple 專業版</title>
     <style>
         body { 
-            background-color: #F8F9FA; 
-            font-family: -apple-system, system-ui, sans-serif;
+            background-color: #FBFBFD; /* Apple 官網經典底色 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #1D1D1F; margin: 0; padding: 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 頂部數據看板 - 磨砂玻璃感 */
+        /* 數據看板 - 磨砂玻璃質感 */
         .dashboard {
-            display: flex; background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid #E5E5E7;
+            display: flex; background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
             padding: 15px; position: sticky; top: 0; z-index: 100;
         }
         .stat-item { flex: 1; text-align: center; }
         .stat-label { font-size: 11px; color: #86868B; margin-bottom: 4px; font-weight: 600; }
-        .stat-value { font-size: 26px; font-weight: 700; line-height: 1; }
+        .stat-value { font-size: 26px; font-weight: 700; line-height: 1; letter-spacing: -0.5px; }
 
-        .container { padding: 15px; max-width: 900px; margin: 0 auto; }
+        .container { padding: 15px; max-width: 800px; margin: 0 auto; }
 
-        /* 寬版格子系統 */
+        /* 80 人適配格子系統 */
         .member-grid { 
             display: grid; 
-            /* 調整為 100px 確保能塞下 "蔡維修-2" */
-            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); 
-            gap: 12px; margin-bottom: 40px;
+            /* 調整為 100px 確保能完美容納 "蔡維修-2" */
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 10px; margin-bottom: 35px;
         }
         
         .name-card {
             cursor: pointer;
-            padding: 14px 6px;
-            border-radius: 16px; /* 圓潤圓角 */
+            padding: 12px 6px;
+            border-radius: 14px; /* Apple 控制中心圓角 */
             text-align: center;
             font-size: 14px;
             font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; align-items: center; justify-content: center;
-            min-height: 48px; border: 1px solid transparent;
-            white-space: nowrap; /* 絕對不換行 */
-            overflow: hidden;
+            min-height: 44px; border: 1px solid transparent;
+            white-space: nowrap; overflow: hidden;
         }
 
-        /* 未到：Apple 經典莫蘭迪紅 (參考 image_464163 優化) */
+        /* 未到：低飽和莫蘭迪紅 (參考 image_617c3c 優化) */
         .card-absent {
-            background-color: #FFF0F1;
+            background-color: #FFF1F2;
             color: #D7444E;
-            border-color: #FDE2E4;
-            box-shadow: 0 4px 10px rgba(215, 68, 78, 0.06);
+            border-color: #FEE2E2;
+            box-shadow: 0 2px 8px rgba(215, 68, 78, 0.04);
         }
 
-        /* 已到：清爽亞麻灰 (參考 image_617c3c 調優) */
+        /* 已到：珍珠白/亞麻灰 (參考 image_617c3c 調優) */
         .card-present {
             background-color: #FFFFFF;
-            color: #AEAEB2;
-            border-color: #E5E5E7;
+            color: #C1C1C6;
+            border-color: #EBEBEB;
         }
 
-        .name-card:active { transform: scale(0.94); background-color: #F2F2F7; }
+        .name-card:active { transform: scale(0.92); opacity: 0.8; }
         
         .section-header {
-            font-size: 14px; font-weight: 700; color: #86868B;
-            margin: 20px 0 15px 4px; display: flex; align-items: center;
+            font-size: 13px; font-weight: 700; color: #86868B;
+            margin: 20px 0 12px 4px; display: flex; align-items: center;
         }
         .section-header::before {
-            content: ""; width: 4px; height: 16px; background: #D7444E;
-            margin-right: 10px; border-radius: 2px;
+            content: ""; width: 3.5px; height: 14px; background: #D7444E;
+            margin-right: 8px; border-radius: 2px;
         }
-        .header-arrived::before { background: #AEAEB2; }
+        .header-arrived::before { background: #D1D1D6; }
     </style>
 </head>
 <body>
@@ -80,23 +79,23 @@
     <div class="dashboard">
         <div class="stat-item">
             <div class="stat-label">待報到</div>
-            <div id="not-count" class="stat-value" style="color: #D7444E;">0</div>
+            <div id="not-count" class="stat-value" style="color: #E11D48;">0</div>
         </div>
-        <div class="stat-item" style="border-left: 1px solid #E5E5E7; border-right: 1px solid #E5E5E7;">
+        <div class="stat-item" style="border-left: 1px solid #F2F2F7; border-right: 1px solid #F2F2F7;">
             <div class="stat-label">總人數</div>
             <div id="total-count" class="stat-value">0</div>
         </div>
         <div class="stat-item">
             <div class="stat-label">已入座</div>
-            <div id="arr-count" class="stat-value" style="color: #1D1D1F;">0</div>
+            <div id="arr-count" class="stat-value" style="color: #3A3A3C;">0</div>
         </div>
     </div>
 
     <div class="container">
-        <div class="section-header">WAITING LIST / 尚未報到</div>
+        <div class="section-header">! 待報到名單 (UNCHECKED)</div>
         <div id="not-arrived-list" class="member-grid"></div>
 
-        <div class="section-header header-arrived">ARRIVED / 已經入座</div>
+        <div class="section-header header-arrived">✓ 已入座名單 (CHECKED)</div>
         <div id="arrived-list" class="member-grid"></div>
     </div>
 
@@ -137,7 +136,7 @@
             const emp = fullData.find(e => e.name === name);
             if (emp) {
                 emp.isChecked = targetState;
-                refreshUI(); // 樂觀更新：點擊瞬間完成位移
+                refreshUI(); // 樂觀更新：點擊瞬間變色，這是靈魂！
             }
             fetch(API_URL, {
                 method: 'POST',
