@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 點名戰情室 - Claymorphism Edition</title>
+    <title>2026 點名戰情室 - Cyber Neon Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=SF+Pro+Display:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=SF+Pro+Display:wght@400;600;700&display=swap');
         
         body { 
-            background-color: #F0F2F5; /* 淺灰底 */
-            font-family: 'Quicksand', -apple-system, "SF Pro Display", sans-serif;
-            color: #4A4A4A;
+            background-color: #0A0A0A; /* 極致深黑 */
+            font-family: 'Orbitron', -apple-system, "SF Pro Display", sans-serif;
+            color: #E0E0E0;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
@@ -25,17 +25,17 @@
         }
         
         .stat-item {
-            background: #F0F2F5;
-            border-radius: 30px; /* 更圓潤的邊角 */
+            background: rgba(255, 255, 255, 0.05); /* 半透明底 */
+            border-radius: 15px; 
             padding: 25px 10px;
             text-align: center;
-            /* Claymorphism 陰影效果 */
-            box-shadow: 10px 10px 20px #D1D9E6, -10px -10px 20px #FFFFFF;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1); /* 輕微霓虹光暈 */
+            border: 1px solid rgba(0, 255, 255, 0.2);
         }
 
-        .stat-label { font-size: 0.7rem; color: #8C8C8C; font-weight: 500; margin-bottom: 6px; }
-        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
-        .stat-pct { font-size: 0.8rem; color: #B3B3B3; margin-top: 5px; }
+        .stat-label { font-size: 0.7rem; color: #7B7B7B; font-weight: 500; margin-bottom: 6px; }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #00FFFF; /* 霓虹青 */ }
+        .stat-pct { font-size: 0.8rem; color: #5A5A5A; margin-top: 5px; }
 
         /* 格子系統 */
         .member-grid { 
@@ -47,7 +47,7 @@
         .name-card {
             cursor: pointer;
             padding: 18px 8px;
-            border-radius: 25px; /* 超級圓潤 */
+            border-radius: 12px; 
             text-align: center;
             font-size: 1rem;
             transition: all 0.3s ease-in-out;
@@ -55,36 +55,39 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            background: rgba(255, 255, 255, 0.03); /* 極低透明度底 */
         }
 
-        /* 未到：暖橘色黏土塊 */
+        /* 未到：霓虹紅邊框與文字 */
         .card-absent {
-            background-color: #FFC0CB; /* 柔和淺粉 */
-            color: #E27D60; /* 暖橘紅 */
-            box-shadow: 8px 8px 16px rgba(226, 125, 96, 0.15), -8px -8px 16px #FFFFFF;
+            color: #FF0077; /* 霓虹粉紅 */
+            box-shadow: 0 0 10px rgba(255, 0, 119, 0.6); /* 強烈發光 */
+            border: 2px solid #FF0077;
         }
 
-        /* 已到：淺灰黏土塊 */
+        /* 已到：低調藍邊框與文字 */
         .card-present {
-            background-color: #F0F2F5;
-            color: #B0B3BA; /* 淡灰 */
-            box-shadow: inset 5px 5px 10px #D1D9E6, inset -5px -5px 10px #FFFFFF;
+            color: #00FFFF; /* 霓虹青 */
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); /* 微弱發光 */
+            border: 1px solid #00FFFF;
+            opacity: 0.5; /* 降低存在感 */
         }
 
         .name-card:active { 
             transform: scale(0.95);
-            box-shadow: inset 3px 3px 6px #D1D9E6, inset -3px -3px 6px #FFFFFF;
+            box-shadow: 0 0 20px rgba(255, 0, 119, 1); /* 點擊時更亮 */
         }
         
         .section-header {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #8C8C8C;
+            color: #7B7B7B;
             margin: 40px 0 20px 0px;
             text-align: center;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
-        .divider { border: none; height: 1px; background-color: #E0E4EB; margin: 3rem 0; }
+        .divider { border: none; height: 1px; background-color: #222; margin: 3rem 0; }
     </style>
 </head>
 <body class="p-6 md:p-14">
@@ -92,29 +95,29 @@
         
         <div class="dashboard">
             <div class="stat-item">
-                <div class="stat-label">未到</div>
-                <div id="not-count" class="stat-value text-[#E27D60]">0</div>
+                <div class="stat-label">ABSENT</div>
+                <div id="not-count" class="stat-value text-[#FF0077]">0</div>
                 <div id="not-pct" class="stat-pct">0%</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">總人數</div>
-                <div id="total-count" class="stat-value text-[#4A4A4A]">0</div>
+                <div class="stat-label">TOTAL</div>
+                <div id="total-count" class="stat-value text-[#E0E0E0]">0</div>
                 <div class="stat-pct">100%</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">已到</div>
-                <div id="arr-count" class="stat-value text-[#6CB69E]">0</div>
+                <div class="stat-label">ARRIVED</div>
+                <div id="arr-count" class="stat-value text-[#00FFFF]">0</div>
                 <div id="arr-pct" class="stat-pct">0%</div>
             </div>
         </div>
 
         <div id="main-content">
-            <div class="section-header">UNCHECKED / 待報到</div>
+            <div class="section-header">UNCHECKED / MISSING</div>
             <div id="not-arrived-list" class="member-grid"></div>
 
             <hr class="divider">
 
-            <div class="section-header">CHECKED / 已入座</div>
+            <div class="section-header">CHECKED / ARRIVED</div>
             <div id="arrived-list" class="member-grid"></div>
         </div>
     </div>
