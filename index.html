@@ -3,175 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 點名戰情室 - Cyber Neon Edition</title>
+    <title>2026 皇家點名戰情室 - Royal Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=SF+Pro+Display:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=SF+Pro+Display:wght@400;600;700&display=swap');
         
         body { 
-            background-color: #0A0A0A; /* 極致深黑 */
-            font-family: 'Orbitron', -apple-system, "SF Pro Display", sans-serif;
-            color: #E0E0E0;
+            /* 深邃午夜藍 */
+            background-color: #0F172A; 
+            font-family: -apple-system, "SF Pro Display", sans-serif;
+            color: #E2E8F0;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板 */
+        /* 數據看板 (復刻 image_43fb44 結構) */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 15px;
-            margin-bottom: 45px;
+            margin-bottom: 40px;
         }
         
         .stat-item {
-            background: rgba(255, 255, 255, 0.05); /* 半透明底 */
-            border-radius: 15px; 
-            padding: 25px 10px;
+            background: rgba(30, 41, 59, 0.7); /* 半透明黑金藍 */
+            border: 1px solid rgba(212, 175, 55, 0.3); /* 極細金邊 */
+            border-radius: 16px;
+            padding: 22px 5px;
             text-align: center;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1); /* 輕微霓虹光暈 */
-            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .stat-label { font-size: 0.7rem; color: #7B7B7B; font-weight: 500; margin-bottom: 6px; }
-        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; color: #00FFFF; /* 霓虹青 */ }
-        .stat-pct { font-size: 0.8rem; color: #5A5A5A; margin-top: 5px; }
+        .stat-label { font-size: 0.7rem; color: #94A3B8; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.1em; }
+        .stat-value { font-size: 2.2rem; font-weight: 700; line-height: 1; color: #D4AF37; /* 香檳金 */ }
+        .stat-pct { font-size: 0.8rem; color: #64748B; margin-top: 6px; }
 
         /* 格子系統 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); 
+            gap: 14px;
         }
         
         .name-card {
             cursor: pointer;
             padding: 18px 8px;
-            border-radius: 12px; 
+            border-radius: 12px;
             text-align: center;
-            font-size: 1rem;
-            transition: all 0.3s ease-in-out;
+            font-size: 1.05rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            background: rgba(255, 255, 255, 0.03); /* 極低透明度底 */
+            letter-spacing: 0.05em;
         }
 
-        /* 未到：霓虹紅邊框與文字 */
+        /* 未到：香檳金邊框 + 呼吸感金光 */
         .card-absent {
-            color: #FF0077; /* 霓虹粉紅 */
-            box-shadow: 0 0 10px rgba(255, 0, 119, 0.6); /* 強烈發光 */
-            border: 2px solid #FF0077;
-        }
-
-        /* 已到：低調藍邊框與文字 */
-        .card-present {
-            color: #00FFFF; /* 霓虹青 */
-            box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); /* 微弱發光 */
-            border: 1px solid #00FFFF;
-            opacity: 0.5; /* 降低存在感 */
-        }
-
-        .name-card:active { 
-            transform: scale(0.95);
-            box-shadow: 0 0 20px rgba(255, 0, 119, 1); /* 點擊時更亮 */
-        }
-        
-        .section-header {
-            font-size: 0.85rem;
+            background: rgba(212, 175, 55, 0.05);
+            color: #D4AF37;
             font-weight: 700;
-            color: #7B7B7B;
-            margin: 40px 0 20px 0px;
-            text-align: center;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .divider { border: none; height: 1px; background-color: #222; margin: 3rem 0; }
-    </style>
-</head>
-<body class="p-6 md:p-14">
-    <div class="max-w-4xl mx-auto">
-        
-        <div class="dashboard">
-            <div class="stat-item">
-                <div class="stat-label">ABSENT</div>
-                <div id="not-count" class="stat-value text-[#FF0077]">0</div>
-                <div id="not-pct" class="stat-pct">0%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">TOTAL</div>
-                <div id="total-count" class="stat-value text-[#E0E0E0]">0</div>
-                <div class="stat-pct">100%</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">ARRIVED</div>
-                <div id="arr-count" class="stat-value text-[#00FFFF]">0</div>
-                <div id="arr-pct" class="stat-pct">0%</div>
-            </div>
-        </div>
-
-        <div id="main-content">
-            <div class="section-header">UNCHECKED / MISSING</div>
-            <div id="not-arrived-list" class="member-grid"></div>
-
-            <hr class="divider">
-
-            <div class="section-header">CHECKED / ARRIVED</div>
-            <div id="arrived-list" class="member-grid"></div>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyBncPUbKeny0vZLeL0e391pvNAcbs_RQD1fDF-DhV9RqT6WOg4itsD51Va-pbG87XJ/exec';
-        let fullData = [];
-
-        function init() {
-            const script = document.createElement('script');
-            script.src = `${API_URL}?callback=render&t=${Date.now()}`;
-            document.body.appendChild(script);
+            border: 2px solid rgba(212, 175, 55, 0.8);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
         }
 
-        window.render = function(data) {
-            fullData = data.employeeList;
-            refreshUI();
-        };
-
-        function refreshUI() {
-            const notArrived = fullData.filter(e => !e.isChecked);
-            const arrived = fullData.filter(e => e.isChecked);
-            const total = fullData.length;
-
-            document.getElementById('not-count').innerText = notArrived.length;
-            document.getElementById('arr-count').innerText = arrived.length;
-            document.getElementById('total-count').innerText = total;
-
-            document.getElementById('not-pct').innerText = total ? Math.round((notArrived.length / total) * 100) + '%' : '0%';
-            document.getElementById('arr-pct').innerText = total ? Math.round((arrived.length / total) * 100) + '%' : '0%';
-
-            // 樂觀更新渲染
-            document.getElementById('not-arrived-list').innerHTML = notArrived.map(emp => `
-                <div onclick="toggle('${emp.name}', true)" class="name-card card-absent">${emp.name}</div>
-            `).join('');
-
-            document.getElementById('arrived-list').innerHTML = arrived.map(emp => `
-                <div onclick="toggle('${emp.name}', false)" class="name-card card-present">${emp.name}</div>
-            `).join('');
+        /* 已到：沈穩暗銅色 (容錯可見) */
+        .card-present {
+            background: rgba(30, 41, 59, 0.4);
+            color: #475569; /* 暗銅灰 */
+            font-weight: 400;
+            border: 1px solid rgba(71, 85, 105, 0.3);
         }
-
-        function toggle(name, targetState) {
-            const emp = fullData.find(e => e.name === name);
-            if (emp) {
-                emp.isChecked = targetState;
-                refreshUI(); 
-            }
-            fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ name: name, isChecked: targetState })
-            });
-        }
-        window.onload = init;
-    </script>
-</body>
-</html>
