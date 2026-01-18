@@ -3,67 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統</title>
+    <title>點名系統-最終修復版</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        .card-active { 
-            background: linear-gradient(135deg, #dcfce7 0%, #ffffff 100%); 
-            border: 2px solid #22c55e !important; 
-            box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2);
-        }
-    </style>
 </head>
-<body class="min-h-screen pb-12">
-    <div class="max-w-5xl mx-auto px-4 pt-8 text-center">
-        <h1 class="text-3xl font-bold text-slate-800 mb-8">點名系統</h1>
-        
-        <div id="loading-view" class="flex flex-col items-center justify-center py-20">
-            <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-400">正在連接雲端...</p>
+<body class="bg-slate-50 min-h-screen p-6">
+    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-6">
+        <h1 class="text-2xl font-bold text-center text-slate-800 mb-6">點名系統</h1>
+        <div id="loading" class="text-center py-10">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p id="msg" class="text-slate-500">正在強制連接雲端...</p>
         </div>
-
-        <div id="main-content" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            </div>
+        <div id="list" class="space-y-3 hidden"></div>
     </div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
 
-        async function init() {
-            try {
-                const res = await fetch(`${API_URL}?t=${Date.now()}`);
-                const data = await res.json();
-                
-                document.getElementById('loading-view').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                
-                const grid = document.getElementById('main-content');
-                grid.innerHTML = data.employeeList.map(emp => `
-                    <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center justify-between ${emp.isChecked ? 'card-active' : ''}">
-                        <span class="font-medium text-slate-700">${emp.name}</span>
-                        <input type="checkbox" class="w-5 h-5 accent-green-600" ${emp.isChecked ? 'checked' : ''} 
-                               onchange="toggle('${emp.name}', this.checked)">
-                    </div>
-                `).join('');
-            } catch (err) {
-                alert("連線失敗，請檢查 GAS 部署是否正確！");
-            }
+        // 使用 JSONP 方式，繞過瀏覽器的 Failed to fetch 限制
+        function loadData() {
+            const script = document.createElement('script');
+            script.src = `${API_URL}?callback=renderUI&t=${Date.now()}`;
+            document.body.appendChild(script);
         }
 
-        async function toggle(name, isChecked) {
+        window.renderUI = function(data) {
+            const listDiv = document.getElementById('list');
+            const loadingDiv = document.getElementById('loading');
+            
+            if (!data.employeeList) {
+                document.getElementById('msg').innerText = "抓到資料了，但名單是空的！";
+                return;
+            }
+
+            listDiv.innerHTML = data.employeeList.map(emp => `
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <span class="font-medium text-slate-700">${emp.name}</span>
+                    <input type="checkbox" class="w-6 h-6 rounded accent-green-600" 
+                           ${emp.isChecked ? 'checked' : ''} 
+                           onchange="updateStatus('${emp.name}', this.checked)">
+                </div>
+            `).join('');
+            
+            loadingDiv.classList.add('hidden');
+            listDiv.classList.remove('hidden');
+        };
+
+        function updateStatus(name, isChecked) {
+            // POST 更新通常不需要 JSONP，維持 no-cors 即可
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ name, isChecked })
             });
-            // 點擊後稍微變色提示，不需要等待伺服器
-            init(); 
         }
 
-        window.onload = init;
+        window.onload = loadData;
     </script>
 </body>
 </html>
