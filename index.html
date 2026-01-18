@@ -3,72 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統 - 最終完工版</title>
+    <title>2026 點名戰情室 - 催票優先版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
-        .card-active { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background-color: #0f172a; font-family: 'Inter', sans-serif; color: #f8fafc; }
+        
+        /* 頂部數據看板：暗色系高級感 */
+        .stat-card {
+            background: #1e293b;
+            border-radius: 20px;
+            border: 1px solid #334155;
+        }
+
+        .member-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); 
+            gap: 12px; 
+        }
+        
+        .name-tag {
+            aspect-ratio: 1.1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 700;
+            border-radius: 16px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.95rem;
+            text-align: center;
+            padding: 4px;
+        }
+
+        /* 未到樣式：最顯眼的高亮色 (橘紅漸層) */
+        .tag-absent {
+            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.4);
+            border: 2px solid #fb7185;
+        }
+
+        /* 已到樣式：沉穩低調 (深色半透明) */
+        .tag-present {
+            background: #1e293b;
+            color: #475569;
+            border: 2px solid #334155;
+            opacity: 0.6;
+        }
+
+        .name-tag:active { transform: scale(0.9); }
+
+        .section-container {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 28px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen p-6">
-    <div class="max-w-md mx-auto">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold text-slate-800">點名系統</h1>
-            <p class="text-slate-500 text-sm mt-2">即時同步雲端試算表</p>
-        </header>
-
-        <div id="loading" class="text-center py-20 glass rounded-3xl shadow-lg">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p class="text-slate-600 font-medium">資料傳輸中...</p>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="grid grid-cols-3 gap-3 mb-8">
+            <div class="stat-card p-4 text-center border-t-4 border-red-500">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">趕快催人 (未到)</p>
+                <h3 id="not-count" class="text-3xl font-black text-red-500">0</h3>
+            </div>
+            <div class="stat-card p-4 text-center border-t-4 border-slate-600">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">已就緒 (已到)</p>
+                <h3 id="arr-count" class="text-3xl font-black text-slate-400">0</h3>
+            </div>
+            <div class="stat-card p-4 text-center border-t-4 border-blue-500">
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">全體官兵</p>
+                <h3 id="total-count" class="text-3xl font-black text-blue-500">0</h3>
+            </div>
         </div>
 
-        <div id="list" class="grid grid-cols-1 gap-3 hidden">
-            </div>
+        <div id="loading" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-red-500 border-t-transparent mb-4"></div>
+            <p class="text-slate-400 font-bold tracking-widest">掃描會場中...</p>
+        </div>
+
+        <div id="main-content" class="hidden space-y-12">
+            <section>
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h2 class="text-red-400 font-black text-xl tracking-tighter italic">! 誰還沒到</h2>
+                </div>
+                <div class="section-container">
+                    <div id="not-arrived-list" class="member-grid"></div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <h2 class="text-slate-500 font-black text-xl tracking-tighter">✓ 已安全抵達</h2>
+                </div>
+                <div class="section-container" style="border-style: solid; opacity: 0.8;">
+                    <div id="arrived-list" class="member-grid"></div>
+                </div>
+            </section>
+        </div>
     </div>
 
     <script>
-// 請確保這裡的網址跟妳剛剛貼給我的是「同一個」！
-const API_URL = 'https://script.google.com/macros/s/AKfycbyBncPUbKeny0vZLeL0e391pvNAcbs_RQD1fDF-DhV9RqT6WOg4itsD51Va-pbG87XJ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyBncPUbKeny0vZLeL0e391pvNAcbs_RQD1fDF-DhV9RqT6WOg4itsD51Va-pbG87XJ/exec';
+        let fullData = [];
 
-        // 1. 抓取資料 (JSONP)
         function init() {
             const script = document.createElement('script');
             script.src = `${API_URL}?callback=render&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // 2. 顯示名單
         window.render = function(data) {
-            const listDiv = document.getElementById('list');
-            const loadingDiv = document.getElementById('loading');
-            
-            listDiv.innerHTML = data.employeeList.map(emp => `
-                <div class="flex items-center justify-between p-5 bg-white rounded-2xl border-2 border-transparent shadow-sm transition-all ${emp.isChecked ? 'card-active' : ''}">
-                    <span class="text-lg font-bold">${emp.name}</span>
-                    <input type="checkbox" class="w-7 h-7 accent-green-600" 
-                           ${emp.isChecked ? 'checked' : ''} 
-                           onchange="sync('${emp.name}', this.checked, this)">
-                </div>
-            `).join('');
-            
-            loadingDiv.classList.add('hidden');
-            listDiv.classList.remove('hidden');
+            fullData = data.employeeList;
+            refreshUI();
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
         };
 
-        // 3. 同步回傳
-        function sync(name, isChecked, el) {
-            // 視覺即時反饋
-            const card = el.parentElement;
-            if (isChecked) card.classList.add('card-active');
-            else card.classList.remove('card-active');
+        function refreshUI() {
+            const notList = document.getElementById('not-arrived-list');
+            const arrList = document.getElementById('arrived-list');
+            const notArrived = fullData.filter(e => !e.isChecked);
+            const arrived = fullData.filter(e => e.isChecked);
 
+            document.getElementById('not-count').innerText = notArrived.length;
+            document.getElementById('arr-count').innerText = arrived.length;
+            document.getElementById('total-count').innerText = fullData.length;
+
+            notList.innerHTML = notArrived.map(emp => `
+                <div onclick="toggle('${emp.name}', true)" class="name-tag tag-absent">${emp.name}</div>
+            `).join('');
+
+            arrList.innerHTML = arrived.map(emp => `
+                <div onclick="toggle('${emp.name}', false)" class="name-tag tag-present">${emp.name}</div>
+            `).join('');
+        }
+
+        function toggle(name, targetState) {
+            const emp = fullData.find(e => e.name === name);
+            if (emp) {
+                emp.isChecked = targetState;
+                refreshUI();
+            }
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify({ name, isChecked })
+                body: JSON.stringify({ name: name, isChecked: targetState })
             });
         }
-
         window.onload = init;
     </script>
 </body>
