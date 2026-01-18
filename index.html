@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 旗艦點名戰情室 - Glassmorphism Pro</title>
+    <title>2026 點名戰情室 - Soft Sand Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=SF+Pro+Display:wght@400;600;700&display=swap');
         
         body { 
-            /* 使用極淺灰藍作為底色，營造環境光感 */
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            color: #1d1d1f;
+            /* 沙丘大地底色：燕麥米 */
+            background-color: #F7F3F0; 
+            font-family: -apple-system, "SF Pro Display", "Noto Sans TC", sans-serif;
+            color: #4A443F; /* 深可可色取代死黑 */
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板區 (復刻 image_43fb44) */
+        /* 數據看板 (復刻 image_43fb44 佈局) */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -26,109 +26,102 @@
         }
         
         .stat-item {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(10px); /* 磨砂玻璃核心 */
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            padding: 18px 5px;
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 22px 5px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+            box-shadow: 0 10px 20px rgba(74, 68, 63, 0.03); /* 極淡的大地色陰影 */
         }
 
-        .stat-label { font-size: 0.7rem; color: #86868b; font-weight: 600; margin-bottom: 4px; }
-        .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
-        .stat-pct { font-size: 0.75rem; color: #86868b; margin-top: 4px; }
+        .stat-label { font-size: 0.75rem; color: #A89F95; font-weight: 600; margin-bottom: 4px; }
+        .stat-value { font-size: 1.9rem; font-weight: 700; line-height: 1; }
+        .stat-pct { font-size: 0.8rem; color: #BCB4AC; margin-top: 4px; }
 
         /* 格子系統 */
         .member-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); 
-            gap: 12px;
+            gap: 14px;
         }
         
         .name-card {
             cursor: pointer;
-            padding: 16px 5px;
-            border-radius: 16px;
+            padding: 16px 8px;
+            border-radius: 18px;
             text-align: center;
-            font-size: 0.95rem;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 1rem;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
+            letter-spacing: 0.02em;
         }
 
-        /* 未到：低飽和度玫瑰粉霧 + 內發光 */
+        /* 未到：暖潤陶土紅 (低飽和、環境光感) */
         .card-absent {
-            background: rgba(255, 240, 242, 0.8);
-            backdrop-filter: blur(5px);
-            color: #c53030; /* 莫蘭迪深紅 */
+            background-color: #FCECE8; /* 柔和粉砂 */
+            color: #B25E50; /* 陶土紅 */
             font-weight: 700;
-            box-shadow: 0 4px 15px rgba(197, 48, 48, 0.06), inset 0 0 10px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 6px 15px rgba(178, 94, 80, 0.08);
         }
 
-        /* 已到：珍珠白磨砂 + 沈穩灰字 */
+        /* 已到：淡雅麻布白 (容錯、不傷眼) */
         .card-present {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(5px);
-            color: #94a3b8;
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #C2BBB4; /* 亞麻灰 */
             font-weight: 400;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(188, 180, 172, 0.2);
         }
 
-        .name-card:active { transform: scale(0.92); opacity: 0.8; }
+        .name-card:active { transform: scale(0.9); opacity: 0.7; }
         
         .section-header {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            color: #86868b;
-            margin: 35px 0 15px 5px;
-            letter-spacing: 0.05em;
+            color: #8C847C;
+            margin: 35px 0 15px 10px;
             display: flex;
             align-items: center;
         }
-        .section-header::before {
+        .section-header::after {
             content: "";
-            display: inline-block;
-            width: 3px;
-            height: 12px;
-            background: currentColor;
-            margin-right: 8px;
-            border-radius: 2px;
+            flex: 1;
+            height: 1px;
+            background: rgba(188, 180, 172, 0.2);
+            margin-left: 15px;
         }
 
-        .divider { border-top: 1px solid rgba(0,0,0,0.05); margin: 3rem 0; }
+        .divider { border-top: 1px solid rgba(188, 180, 172, 0.2); margin: 3rem 0; }
     </style>
 </head>
-<body class="p-5 md:p-12">
+<body class="p-6 md:p-12">
     <div class="max-w-4xl mx-auto">
         
         <div class="dashboard">
             <div class="stat-item">
                 <div class="stat-label">未到</div>
-                <div id="not-count" class="stat-value text-[#ff3b30]">0</div>
+                <div id="not-count" class="stat-value text-[#D97B6B]">0</div>
                 <div id="not-pct" class="stat-pct">0%</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">總人數</div>
-                <div id="total-count" class="stat-value text-[#1d1d1f]">0</div>
+                <div id="total-count" class="stat-value text-[#4A443F]">0</div>
                 <div class="stat-pct">100%</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">已到</div>
-                <div id="arr-count" class="stat-value text-[#34c759]">0</div>
+                <div id="arr-count" class="stat-value text-[#8DA68D]">0</div>
                 <div id="arr-pct" class="stat-pct">0%</div>
             </div>
         </div>
 
         <div id="main-content">
-            <div class="section-header">待報到名單</div>
+            <div class="section-header">WAITING / 待報到</div>
             <div id="not-arrived-list" class="member-grid"></div>
 
             <hr class="divider">
 
-            <div class="section-header">已入座名單</div>
+            <div class="section-header">ARRIVED / 已入座</div>
             <div id="arrived-list" class="member-grid"></div>
         </div>
     </div>
@@ -160,12 +153,11 @@
             document.getElementById('not-pct').innerText = total ? Math.round((notArrived.length / total) * 100) + '%' : '0%';
             document.getElementById('arr-pct').innerText = total ? Math.round((arrived.length / total) * 100) + '%' : '0%';
 
-            // 樂觀更新渲染：未到格子
+            // 樂觀更新渲染
             document.getElementById('not-arrived-list').innerHTML = notArrived.map(emp => `
                 <div onclick="toggle('${emp.name}', true)" class="name-card card-absent">${emp.name}</div>
             `).join('');
 
-            // 樂觀更新渲染：已到格子
             document.getElementById('arrived-list').innerHTML = arrived.map(emp => `
                 <div onclick="toggle('${emp.name}', false)" class="name-card card-present">${emp.name}</div>
             `).join('');
@@ -175,7 +167,7 @@
             const emp = fullData.find(e => e.name === name);
             if (emp) {
                 emp.isChecked = targetState;
-                refreshUI(); // 樂觀更新，先動再說
+                refreshUI(); // 立即更新 UI，速度感爆棚
             }
             fetch(API_URL, {
                 method: 'POST',
