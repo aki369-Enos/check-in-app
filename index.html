@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統-最終修復版</title>
+    <title>點名系統 - 終極穩定版</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 min-h-screen p-6">
+<body class="bg-slate-50 p-6">
     <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-6">
         <h1 class="text-2xl font-bold text-center text-slate-800 mb-6">點名系統</h1>
+        
         <div id="loading" class="text-center py-10">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p id="msg" class="text-slate-500">正在強制連接雲端...</p>
+            <p id="msg" class="text-slate-500">正在同步資料，請稍候...</p>
         </div>
-        <div id="list" class="space-y-3 hidden"></div>
+
+        <div id="list" class="space-y-3 hidden">
+            </div>
     </div>
 
     <script>
+        // 確認這行網址跟妳 GAS 部署後的網址一模一樣
         const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
 
-        // 使用 JSONP 方式，繞過瀏覽器的 Failed to fetch 限制
-        function loadData() {
+        // 1. 強制連線：使用 JSONP 模式抓取資料
+        function getData() {
             const script = document.createElement('script');
-            script.src = `${API_URL}?callback=renderUI&t=${Date.now()}`;
+            // callback=renderData 就是告訴 Google：請把資料塞進 renderData 函數裡
+            script.src = `${API_URL}?callback=renderData&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        window.renderUI = function(data) {
+        // 2. 收到資料後渲染網頁
+        window.renderData = function(data) {
             const listDiv = document.getElementById('list');
             const loadingDiv = document.getElementById('loading');
             
-            if (!data.employeeList) {
-                document.getElementById('msg').innerText = "抓到資料了，但名單是空的！";
-                return;
-            }
-
             listDiv.innerHTML = data.employeeList.map(emp => `
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <span class="font-medium text-slate-700">${emp.name}</span>
-                    <input type="checkbox" class="w-6 h-6 rounded accent-green-600" 
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-sm">
+                    <span class="font-bold text-slate-700 text-lg">${emp.name}</span>
+                    <input type="checkbox" class="w-8 h-8 accent-green-600 rounded-lg" 
                            ${emp.isChecked ? 'checked' : ''} 
                            onchange="updateStatus('${emp.name}', this.checked)">
                 </div>
@@ -48,16 +49,18 @@
             listDiv.classList.remove('hidden');
         };
 
+        // 3. 更新狀態回傳 Google
         function updateStatus(name, isChecked) {
-            // POST 更新通常不需要 JSONP，維持 no-cors 即可
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ name, isChecked })
             });
+            // 點擊後不需要等待，體驗更好
         }
 
-        window.onload = loadData;
+        // 網頁開啟就執行
+        window.onload = getData;
     </script>
 </body>
 </html>
