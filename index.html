@@ -2,123 +2,116 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 點名系統 - 穩定修復版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2026 點名系統 - 寬版精緻格子</title>
     <style>
-        /* 基礎設置 - 確保手機不跑版 */
         body { 
-            background-color: #F4F7F9; 
+            background-color: #F8F9FA; 
             font-family: -apple-system, system-ui, sans-serif;
-            color: #334155;
-            margin: 0; padding: 20px;
+            color: #1D1D1F; margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 看板 - 簡單好讀 (參考 image_464163) */
+        /* 頂部數據看板 - 磨砂玻璃感 */
         .dashboard {
-            display: flex;
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            text-align: center;
+            display: flex; background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid #E5E5E7;
+            padding: 15px; position: sticky; top: 0; z-index: 100;
         }
-        .stat-item { flex: 1; }
-        .stat-label { font-size: 12px; color: #94A3B8; margin-bottom: 5px; }
-        .stat-value { font-size: 28px; font-weight: 800; }
+        .stat-item { flex: 1; text-align: center; }
+        .stat-label { font-size: 11px; color: #86868B; margin-bottom: 4px; font-weight: 600; }
+        .stat-value { font-size: 26px; font-weight: 700; line-height: 1; }
 
-        /* 名單容器 - 這是關鍵！ */
-        .list-container { max-width: 600px; margin: 0 auto; }
-        
+        .container { padding: 15px; max-width: 900px; margin: 0 auto; }
+
+        /* 寬版格子系統 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
-            gap: 10px;
-            margin-bottom: 30px;
+            /* 調整為 100px 確保能塞下 "蔡維修-2" */
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); 
+            gap: 12px; margin-bottom: 40px;
         }
         
-        /* 卡片設計 - 低飽和 Apple 風 */
         .name-card {
             cursor: pointer;
-            padding: 15px 5px;
-            border-radius: 10px;
+            padding: 14px 6px;
+            border-radius: 16px; /* 圓潤圓角 */
             text-align: center;
             font-size: 14px;
-            font-weight: 500;
-            border: 1px solid #E2E8F0;
-            background: #ffffff;
-            transition: 0.2s;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 48px; border: 1px solid transparent;
+            white-space: nowrap; /* 絕對不換行 */
+            overflow: hidden;
         }
 
-        /* 未到：冷調粉紅 (修正怪怪的紅色) */
+        /* 未到：Apple 經典莫蘭迪紅 (參考 image_464163 優化) */
         .card-absent {
-            background-color: #FFF1F2;
-            color: #E11D48;
-            border-color: #FECDD3;
+            background-color: #FFF0F1;
+            color: #D7444E;
+            border-color: #FDE2E4;
+            box-shadow: 0 4px 10px rgba(215, 68, 78, 0.06);
         }
 
-        /* 已到：低調鋼鐵灰 */
+        /* 已到：清爽亞麻灰 (參考 image_617c3c 調優) */
         .card-present {
-            background-color: #F8FAFC;
-            color: #94A3B8;
-            border-color: #F1F5F9;
+            background-color: #FFFFFF;
+            color: #AEAEB2;
+            border-color: #E5E5E7;
         }
 
+        .name-card:active { transform: scale(0.94); background-color: #F2F2F7; }
+        
         .section-header {
-            font-size: 14px;
-            font-weight: 700;
-            color: #64748B;
-            margin: 20px 0 10px 0;
-            padding-left: 5px;
-            border-left: 4px solid #CBD5E1;
+            font-size: 14px; font-weight: 700; color: #86868B;
+            margin: 20px 0 15px 4px; display: flex; align-items: center;
         }
+        .section-header::before {
+            content: ""; width: 4px; height: 16px; background: #D7444E;
+            margin-right: 10px; border-radius: 2px;
+        }
+        .header-arrived::before { background: #AEAEB2; }
     </style>
 </head>
 <body>
 
-    <div class="list-container">
-        <div class="dashboard">
-            <div class="stat-item">
-                <div class="stat-label">未到</div>
-                <div id="not-count" class="stat-value" style="color: #E11D48;">0</div>
-            </div>
-            <div class="stat-item" style="border-left: 1px solid #F1F5F9; border-right: 1px solid #F1F5F9;">
-                <div class="stat-label">總人數</div>
-                <div id="total-count" class="stat-value">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">已到</div>
-                <div id="arr-count" class="stat-value" style="color: #64748B;">0</div>
-            </div>
+    <div class="dashboard">
+        <div class="stat-item">
+            <div class="stat-label">待報到</div>
+            <div id="not-count" class="stat-value" style="color: #D7444E;">0</div>
         </div>
+        <div class="stat-item" style="border-left: 1px solid #E5E5E7; border-right: 1px solid #E5E5E7;">
+            <div class="stat-label">總人數</div>
+            <div id="total-count" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">已入座</div>
+            <div id="arr-count" class="stat-value" style="color: #1D1D1F;">0</div>
+        </div>
+    </div>
 
-        <div class="section-header">待追蹤 (未到)</div>
-        <div id="not-arrived-list" class="member-grid">
-            </div>
+    <div class="container">
+        <div class="section-header">WAITING LIST / 尚未報到</div>
+        <div id="not-arrived-list" class="member-grid"></div>
 
-        <div class="section-header">已確認 (入座)</div>
-        <div id="arrived-list" class="member-grid">
-            </div>
+        <div class="section-header header-arrived">ARRIVED / 已經入座</div>
+        <div id="arrived-list" class="member-grid"></div>
     </div>
 
     <script>
-        // 妳的 API 網址，我確認過是這串
         const API_URL = 'https://script.google.com/macros/s/AKfycbyBncPUbKeny0vZLeL0e391pvNAcbs_RQD1fDF-DhV9RqT6WOg4itsD51Va-pbG87XJ/exec';
         let fullData = [];
 
-        // 初始化
         function init() {
             const script = document.createElement('script');
             script.src = `${API_URL}?callback=render&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // 渲染函數
         window.render = function(data) {
-            if (!data || !data.employeeList) {
-                console.error("數據格式錯誤");
-                return;
-            }
+            if (!data || !data.employeeList) return;
             fullData = data.employeeList;
             refreshUI();
         };
@@ -127,32 +120,25 @@
             const notArrived = fullData.filter(e => !e.isChecked);
             const arrived = fullData.filter(e => e.isChecked);
             
-            // 更新看板
             document.getElementById('not-count').innerText = notArrived.length;
             document.getElementById('arr-count').innerText = arrived.length;
             document.getElementById('total-count').innerText = fullData.length;
 
-            // 更新未到名單
-            const notList = document.getElementById('not-arrived-list');
-            notList.innerHTML = notArrived.map(emp => `
+            document.getElementById('not-arrived-list').innerHTML = notArrived.map(emp => `
                 <div onclick="toggle('${emp.name}', true)" class="name-card card-absent">${emp.name}</div>
             `).join('');
 
-            // 更新已到名單
-            const arrList = document.getElementById('arrived-list');
-            arrList.innerHTML = arrived.map(emp => `
+            document.getElementById('arrived-list').innerHTML = arrived.map(emp => `
                 <div onclick="toggle('${emp.name}', false)" class="name-card card-present">${emp.name}</div>
             `).join('');
         }
 
-        // 切換狀態 (樂觀更新)
         function toggle(name, targetState) {
             const emp = fullData.find(e => e.name === name);
             if (emp) {
                 emp.isChecked = targetState;
-                refreshUI(); // 先動畫面，保證快！
+                refreshUI(); // 樂觀更新：點擊瞬間完成位移
             }
-            // 偷偷跟後台講
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
