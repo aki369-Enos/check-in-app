@@ -46,4 +46,95 @@
         </div>
 
         <div id="loading-view" class="flex flex-col items-center justify-center py-20">
-            <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4
+            <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-400">正在同步雲端資料...</p>
+        </div>
+    </div>
+
+    <script>
+        // 妳最新的 GAS 網址，已經幫妳填好了
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
+
+        // 初始化：抓取資料
+        async function init() {
+            updateStatus('connecting');
+            try {
+                // 使用 Google 認可的連線方式，加上快取打破機制
+                const response = await fetch(`${API_URL}?v=${Date.now()}`);
+                const data = await response.json();
+                
+                document.getElementById('loading-view').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                render(data);
+                updateStatus('online');
+            } catch (err) {
+                console.error("連線錯誤:", err);
+                updateStatus('error');
+            }
+        }
+
+        // 渲染畫面
+        function render(data) {
+            document.getElementById('arrived-count').innerText = data.arrivedCount;
+            document.getElementById('not-arrived-count').innerText = data.notArrivedCount;
+
+            const grid = document.getElementById('employee-grid');
+            grid.innerHTML = data.employeeList.map(emp => `
+                <div class="relative">
+                    <input type="checkbox" id="check-${emp.name}" class="hidden" 
+                           ${emp.isChecked ? 'checked' : ''} 
+                           onchange="handleCheck('${emp.name}', this.checked)">
+                    <label for="check-${emp.name}" 
+                           class="check-anim flex items-center justify-center p-4 rounded-2xl border border-slate-200 bg-white cursor-pointer select-none text-slate-700 font-medium hover:bg-slate-50 ${emp.isChecked ? 'card-active' : ''}">
+                        ${emp.name}
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        // 處理勾選動作
+        async function handleCheck(name, isChecked) {
+            updateStatus('syncing');
+            const label = document.querySelector(`label[for="check-${name}"]`);
+            if (isChecked) label.classList.add('card-active');
+            else label.classList.remove('card-active');
+
+            try {
+                // 發送 POST 請求到 Google 
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // 解決 Google 的安全性限制
+                    body: JSON.stringify({ name, isChecked })
+                });
+                
+                // 等待 1 秒後刷新數據，確保試算表已更新
+                setTimeout(init, 1000);
+            } catch (err) {
+                updateStatus('error');
+            }
+        }
+
+        function updateStatus(state) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if (state === 'connecting') {
+                dot.className = "w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse";
+                text.innerText = "連線中...";
+            } else if (state === 'online') {
+                dot.className = "w-2 h-2 bg-green-500 rounded-full mr-2";
+                text.innerText = "雲端同步中";
+            } else if (state === 'syncing') {
+                dot.className = "w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-spin";
+                text.innerText = "儲存中...";
+            } else {
+                dot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
+                text.innerText = "連線失敗";
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
