@@ -3,45 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統 - 終極穩定版</title>
+    <title>點名系統 - 最終完工版</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); }
+        .card-active { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+    </style>
 </head>
-<body class="bg-slate-50 p-6">
-    <div class="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-6">
-        <h1 class="text-2xl font-bold text-center text-slate-800 mb-6">點名系統</h1>
-        
-        <div id="loading" class="text-center py-10">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p id="msg" class="text-slate-500">正在同步資料，請稍候...</p>
+<body class="bg-slate-100 min-h-screen p-6">
+    <div class="max-w-md mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-slate-800">點名系統</h1>
+            <p class="text-slate-500 text-sm mt-2">即時同步雲端試算表</p>
+        </header>
+
+        <div id="loading" class="text-center py-20 glass rounded-3xl shadow-lg">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-slate-600 font-medium">資料傳輸中...</p>
         </div>
 
-        <div id="list" class="space-y-3 hidden">
+        <div id="list" class="grid grid-cols-1 gap-3 hidden">
             </div>
     </div>
 
     <script>
-        // 確認這行網址跟妳 GAS 部署後的網址一模一樣
+        // 確認這裡填入妳最新的部署網址
         const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
 
-        // 1. 強制連線：使用 JSONP 模式抓取資料
-        function getData() {
+        // 1. 抓取資料 (JSONP)
+        function init() {
             const script = document.createElement('script');
-            // callback=renderData 就是告訴 Google：請把資料塞進 renderData 函數裡
-            script.src = `${API_URL}?callback=renderData&t=${Date.now()}`;
+            script.src = `${API_URL}?callback=render&t=${Date.now()}`;
             document.body.appendChild(script);
         }
 
-        // 2. 收到資料後渲染網頁
-        window.renderData = function(data) {
+        // 2. 顯示名單
+        window.render = function(data) {
             const listDiv = document.getElementById('list');
             const loadingDiv = document.getElementById('loading');
             
             listDiv.innerHTML = data.employeeList.map(emp => `
-                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 shadow-sm">
-                    <span class="font-bold text-slate-700 text-lg">${emp.name}</span>
-                    <input type="checkbox" class="w-8 h-8 accent-green-600 rounded-lg" 
+                <div class="flex items-center justify-between p-5 bg-white rounded-2xl border-2 border-transparent shadow-sm transition-all ${emp.isChecked ? 'card-active' : ''}">
+                    <span class="text-lg font-bold">${emp.name}</span>
+                    <input type="checkbox" class="w-7 h-7 accent-green-600" 
                            ${emp.isChecked ? 'checked' : ''} 
-                           onchange="updateStatus('${emp.name}', this.checked)">
+                           onchange="sync('${emp.name}', this.checked, this)">
                 </div>
             `).join('');
             
@@ -49,18 +55,21 @@
             listDiv.classList.remove('hidden');
         };
 
-        // 3. 更新狀態回傳 Google
-        function updateStatus(name, isChecked) {
+        // 3. 同步回傳
+        function sync(name, isChecked, el) {
+            // 視覺即時反饋
+            const card = el.parentElement;
+            if (isChecked) card.classList.add('card-active');
+            else card.classList.remove('card-active');
+
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ name, isChecked })
             });
-            // 點擊後不需要等待，體驗更好
         }
 
-        // 網頁開啟就執行
-        window.onload = getData;
+        window.onload = init;
     </script>
 </body>
 </html>
