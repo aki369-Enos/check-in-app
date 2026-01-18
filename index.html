@@ -1,86 +1,69 @@
-/**
- * 1. 處理「讀取」請求 (GET)
- */
-function doGet() {
-  const data = getDashboardData();
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON)
-    .addHeader("Access-Control-Allow-Origin", "*");
-}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點名系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .card-active { 
+            background: linear-gradient(135deg, #dcfce7 0%, #ffffff 100%); 
+            border: 2px solid #22c55e !important; 
+            box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+    <div class="max-w-5xl mx-auto px-4 pt-8 text-center">
+        <h1 class="text-3xl font-bold text-slate-800 mb-8">點名系統</h1>
+        
+        <div id="loading-view" class="flex flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-400">正在連接雲端...</p>
+        </div>
 
-/**
- * 2. 處理「寫入」請求 (POST)
- */
-function doPost(e) {
-  try {
-    const params = JSON.parse(e.postData.contents);
-    const result = updateCheckInStatus(params.name, params.isChecked);
-    return ContentService.createTextOutput(JSON.stringify(result))
-      .setMimeType(ContentService.MimeType.JSON)
-      .addHeader("Access-Control-Allow-Origin", "*");
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
-      .setMimeType(ContentService.MimeType.JSON)
-      .addHeader("Access-Control-Allow-Origin", "*");
-  }
-}
+        <div id="main-content" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            </div>
+    </div>
 
-/**
- * 3. 處理 CORS (OPTIONS)
- */
-function doOptions(e) {
-  return ContentService.createTextOutput("")
-    .setMimeType(ContentService.MimeType.TEXT)
-    .addHeader("Access-Control-Allow-Origin", "*")
-    .addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-    .addHeader("Access-Control-Allow-Headers", "Content-Type");
-}
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
 
-/**
- * 4. 取得儀表板資料邏輯
- */
-function getDashboardData() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dashboardSheet = ss.getSheetByName('聚餐儀表板'); //
-  const employeeSheet = ss.getSheetByName('員工資料庫'); //
+        async function init() {
+            try {
+                const res = await fetch(`${API_URL}?t=${Date.now()}`);
+                const data = await res.json();
+                
+                document.getElementById('loading-view').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                const grid = document.getElementById('main-content');
+                grid.innerHTML = data.employeeList.map(emp => `
+                    <div class="p-4 rounded-2xl border border-slate-200 bg-white shadow-sm flex items-center justify-between ${emp.isChecked ? 'card-active' : ''}">
+                        <span class="font-medium text-slate-700">${emp.name}</span>
+                        <input type="checkbox" class="w-5 h-5 accent-green-600" ${emp.isChecked ? 'checked' : ''} 
+                               onchange="toggle('${emp.name}', this.checked)">
+                    </div>
+                `).join('');
+            } catch (err) {
+                alert("連線失敗，請檢查 GAS 部署是否正確！");
+            }
+        }
 
-  const arrivedCount = dashboardSheet.getRange('A2').getValue() || 0;
-  const notArrivedCount = dashboardSheet.getRange('B2').getValue() || 0;
+        async function toggle(name, isChecked) {
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ name, isChecked })
+            });
+            // 點擊後稍微變色提示，不需要等待伺服器
+            init(); 
+        }
 
-  // 取得員工名單與狀態 (假設 D 欄是姓名, A 欄是勾選框)
-  const lastRow = employeeSheet.getLastRow();
-  const names = employeeSheet.getRange(2, 4, lastRow - 1, 1).getValues(); // D 欄
-  const checks = employeeSheet.getRange(2, 1, lastRow - 1, 1).getValues(); // A 欄
-
-  const employeeList = names.map((row, index) => {
-    return {
-      name: row[0],
-      isChecked: checks[index][0] === true || checks[index][0] === '已到'
-    };
-  });
-
-  return {
-    arrivedCount: arrivedCount,
-    notArrivedCount: notArrivedCount,
-    employeeList: employeeList
-  };
-}
-
-/**
- * 5. 更新勾選狀態邏輯
- */
-function updateCheckInStatus(name, isChecked) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const employeeSheet = ss.getSheetByName('員工資料庫');
-  const lastRow = employeeSheet.getLastRow();
-  const names = employeeSheet.getRange(2, 4, lastRow - 1, 1).getValues();
-
-  for (let i = 0; i < names.length; i++) {
-    if (names[i][0] === name) {
-      // 在 A 欄寫入勾選或取消
-      employeeSheet.getRange(i + 2, 1).setValue(isChecked);
-      return { status: 'success' };
-    }
-  }
-  return { status: 'not_found' };
-}
+        window.onload = init;
+    </script>
+</body>
+</html>
