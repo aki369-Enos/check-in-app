@@ -3,75 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 皇家點名戰情室 - Royal Gold</title>
+    <title>2026 點名戰情室 - Industrial Steel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=SF+Pro+Display:wght@400;600;700&display=swap');
-        
         body { 
-            /* 深邃午夜藍 */
-            background-color: #0F172A; 
-            font-family: -apple-system, "SF Pro Display", sans-serif;
-            color: #E2E8F0;
+            background-color: #F1F5F9; /* 冷調鋼鐵底色 */
+            font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
+            color: #334155;
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板 (復刻 image_43fb44 結構) */
+        /* 數據看板 (復刻 image_43fb44 的專業感) */
         .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-around;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 20px 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .stat-item {
-            background: rgba(30, 41, 59, 0.7); /* 半透明黑金藍 */
-            border: 1px solid rgba(212, 175, 55, 0.3); /* 極細金邊 */
-            border-radius: 16px;
-            padding: 22px 5px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            flex: 1;
         }
 
-        .stat-label { font-size: 0.7rem; color: #94A3B8; font-weight: 600; margin-bottom: 6px; letter-spacing: 0.1em; }
-        .stat-value { font-size: 2.2rem; font-weight: 700; line-height: 1; color: #D4AF37; /* 香檳金 */ }
-        .stat-pct { font-size: 0.8rem; color: #64748B; margin-top: 6px; }
+        .stat-label { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .stat-value { font-size: 26px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+        .stat-pct { font-size: 10px; color: #94A3B8; margin-top: 2px; }
 
-        /* 格子系統 */
+        .container { padding: 25px 15px; max-width: 800px; margin: 0 auto; }
+
+        /* 工業風格格子系統 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); 
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
+            gap: 8px;
         }
         
         .name-card {
             cursor: pointer;
-            padding: 18px 8px;
-            border-radius: 12px;
+            padding: 14px 4px;
             text-align: center;
-            font-size: 1.05rem;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            letter-spacing: 0.05em;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #E2E8F0;
+            background: #FFFFFF;
+            font-weight: 500;
+            position: relative;
         }
 
-        /* 未到：香檳金邊框 + 呼吸感金光 */
+        /* 未到：冷調紅邊框 (工業警告感) */
         .card-absent {
-            background: rgba(212, 175, 55, 0.05);
-            color: #D4AF37;
-            font-weight: 700;
-            border: 2px solid rgba(212, 175, 55, 0.8);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+            border-left: 4px solid #EF4444; /* 強調紅線 */
+            color: #B91C1C;
+            background: linear-gradient(to right, #FEF2F2, #FFFFFF);
         }
 
-        /* 已到：沈穩暗銅色 (容錯可見) */
+        /* 已到：鋼鐵灰 (精密完成感) */
         .card-present {
-            background: rgba(30, 41, 59, 0.4);
-            color: #475569; /* 暗銅灰 */
-            font-weight: 400;
-            border: 1px solid rgba(71, 85, 105, 0.3);
+            border: 1px solid #F1F5F9;
+            color: #CBD5E1;
+            background: #F8FAFC;
         }
+
+        .name-card:active { transform: translateY(1px); background: #F1F5F9; }
+        
+        .section-header {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748B;
+            margin: 30px 0 15px 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 5px;
+        }
+
+        .divider { display: none; } /* 用標題底線取代 */
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="stat-item">
+            <div class="stat-label">Absent</div>
+            <div id="not-count" class="stat-value" style="color: #EF4444;">0</div>
+            <div id="not-pct" class="stat-pct">0%</div>
+        </div>
+        <div class="stat-item" style="border-left: 1px solid #F1F5F9; border-right: 1px solid #F1F5F9;">
