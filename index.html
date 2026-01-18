@@ -3,66 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 旗艦戰情室 - 純淨版</title>
+    <title>2026 旗艦點名戰情室</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
         
         body { 
             background-color: #000000; 
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
             color: #ffffff;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 頂部數據看板：完全照圖排版 */
+        /* 頂部數據看板：完全照截圖比例 */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            margin-bottom: 60px;
-            padding-top: 20px;
+            margin-bottom: 80px;
+            padding-top: 40px;
         }
         
         .stat-item { text-align: center; }
-        .stat-label { font-size: 0.75rem; color: #555; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px; }
-        .stat-value { font-size: 2.5rem; font-weight: 900; line-height: 1; }
-        .stat-pct { font-size: 0.8rem; color: #333; margin-top: 10px; font-weight: 600; }
+        .stat-label { font-size: 0.7rem; color: #444; font-weight: 700; letter-spacing: 0.15em; margin-bottom: 12px; }
+        .stat-value { font-size: 3rem; font-weight: 800; line-height: 1; margin-bottom: 8px; }
+        .stat-pct { font-size: 0.85rem; color: #222; font-weight: 600; }
 
-        /* 80人緊緻名單 */
+        /* 名單區域：完全移除方塊，僅文字控制 */
         .member-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
-            gap: 15px; 
-            padding: 0 10px;
+            gap: 25px 15px; /* 拉大行距，增加空氣感 */
+            padding: 0 20px;
         }
         
         .name-btn {
             cursor: pointer;
             font-weight: 700;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 1rem;
             text-align: center;
-            padding: 10px 0;
-            border-radius: 8px;
+            border: none;
+            background: none;
         }
 
-        /* 未到：高亮純白 (一眼就能看見) */
+        /* 未到：純白發光文字 */
         .status-absent {
             color: #ffffff;
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
         }
 
-        /* 已到：深暗灰 (自動過濾) */
+        /* 已到：深暗灰文字 (隱形化) */
         .status-present {
             color: #1a1a1a;
+            font-weight: 400;
         }
 
-        .name-btn:active { transform: scale(0.9); opacity: 0.5; }
-        .divider { border-color: #111; margin: 4rem 0; }
+        .name-btn:active { transform: scale(0.8); opacity: 0.5; }
+        .divider { border-color: #0d0d0d; margin: 5rem 0; }
+        
+        #loading { color: #222; letter-spacing: 0.3em; font-size: 0.7rem; }
     </style>
 </head>
-<body class="p-6 md:p-16">
-    <div class="max-w-4xl mx-auto">
+<body class="p-6 md:p-20">
+    <div class="max-w-5xl mx-auto">
         
         <div class="dashboard">
             <div class="stat-item">
@@ -72,18 +76,18 @@
             </div>
             <div class="stat-item">
                 <div class="stat-label">總人數</div>
-                <div id="total-count" class="stat-value text-zinc-800">0</div>
-                <div class="stat-pct">100%</div>
+                <div id="total-count" class="stat-value text-[#1a1a1a]">0</div>
+                <div class="stat-pct text-[#0a0a0a]">100%</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">已到</div>
-                <div id="arr-count" class="stat-value text-zinc-900">0</div>
+                <div id="arr-count" class="stat-value text-[#121212]">0</div>
                 <div id="arr-pct" class="stat-pct">0%</div>
             </div>
         </div>
 
-        <div id="loading" class="flex flex-col items-center py-32">
-            <div class="w-5 h-5 border border-zinc-800 border-t-white rounded-full animate-spin"></div>
+        <div id="loading" class="text-center py-32">
+            SYNCHRONIZING...
         </div>
 
         <div id="main-content" class="hidden">
