@@ -3,100 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 旗艦點名戰情室</title>
+    <title>2026 旗艦戰情室 - 純淨版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;800&family=Inter:wght@900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         body { 
             background-color: #000000; 
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             color: #ffffff;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板：Apple 玻璃擬態 */
-        .stat-card {
-            background: #121212;
-            border-radius: 22px;
-            padding: 24px 10px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        /* 頂部數據看板：完全照圖排版 */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            margin-bottom: 60px;
+            padding-top: 20px;
         }
+        
+        .stat-item { text-align: center; }
+        .stat-label { font-size: 0.75rem; color: #555; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .stat-value { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+        .stat-pct { font-size: 0.8rem; color: #333; margin-top: 10px; font-weight: 600; }
 
-        /* 80人緊湊方陣 */
+        /* 80人緊緻名單 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); 
-            gap: 10px; 
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); 
+            gap: 15px; 
+            padding: 0 10px;
         }
         
-        .name-tag {
-            aspect-ratio: 1 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .name-btn {
             cursor: pointer;
-            font-weight: 600;
-            border-radius: 14px;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
             text-align: center;
-            line-height: 1.2;
-            padding: 6px;
+            padding: 10px 0;
+            border-radius: 8px;
         }
 
-        /* 未到：Apple 經典白光 (賣點所在) */
-        .tag-absent {
-            background: #ffffff;
-            color: #000000;
-            box-shadow: 0 12px 30px rgba(255, 255, 255, 0.15);
-            transform: scale(1.02);
+        /* 未到：高亮純白 (一眼就能看見) */
+        .status-absent {
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
         }
 
-        /* 已到：深色霧面 (低調高級) */
-        .tag-present {
-            background: rgba(40, 40, 40, 0.4);
-            color: #4b5563;
-            border: 1px solid rgba(255, 255, 255, 0.02);
+        /* 已到：深暗灰 (自動過濾) */
+        .status-present {
+            color: #1a1a1a;
         }
 
-        .name-tag:active { transform: scale(0.85); }
-
-        .percentage {
-            font-size: 0.65rem;
-            color: #4b5563;
-            margin-top: 4px;
-            font-weight: 400;
-        }
-        
-        .divider { border-color: rgba(255, 255, 255, 0.05); margin: 2.5rem 0; }
+        .name-btn:active { transform: scale(0.9); opacity: 0.5; }
+        .divider { border-color: #111; margin: 4rem 0; }
     </style>
 </head>
-<body class="p-4 md:p-12">
+<body class="p-6 md:p-16">
     <div class="max-w-4xl mx-auto">
         
-        <div class="grid grid-cols-3 gap-4 mb-10">
-            <div class="stat-card">
-                <div class="text-[10px] text-gray-500 font-bold tracking-widest mb-1 uppercase">未到</div>
-                <div id="not-count" class="text-3xl font-extrabold text-white">0</div>
-                <div id="not-pct" class="percentage">0%</div>
+        <div class="dashboard">
+            <div class="stat-item">
+                <div class="stat-label">未到</div>
+                <div id="not-count" class="stat-value text-white">0</div>
+                <div id="not-pct" class="stat-pct">0%</div>
             </div>
-            <div class="stat-card" style="background: linear-gradient(180deg, #1a1a1a 0%, #121212 100%);">
-                <div class="text-[10px] text-gray-500 font-bold tracking-widest mb-1 uppercase">總計</div>
-                <div id="total-count" class="text-3xl font-extrabold text-gray-400">0</div>
-                <div class="percentage">Total Assets</div>
+            <div class="stat-item">
+                <div class="stat-label">總人數</div>
+                <div id="total-count" class="stat-value text-zinc-800">0</div>
+                <div class="stat-pct">100%</div>
             </div>
-            <div class="stat-card">
-                <div class="text-[10px] text-gray-500 font-bold tracking-widest mb-1 uppercase">已到</div>
-                <div id="arr-count" class="text-3xl font-extrabold text-gray-600">0</div>
-                <div id="arr-pct" class="percentage">0%</div>
+            <div class="stat-item">
+                <div class="stat-label">已到</div>
+                <div id="arr-count" class="stat-value text-zinc-900">0</div>
+                <div id="arr-pct" class="stat-pct">0%</div>
             </div>
         </div>
 
-        <div id="loading" class="flex flex-col items-center justify-center py-32">
-            <div class="w-8 h-8 border-2 border-white/10 border-t-white rounded-full animate-spin mb-4"></div>
-            <p class="text-xs text-gray-600 tracking-[0.2em]">SYNCHRONIZING</p>
+        <div id="loading" class="flex flex-col items-center py-32">
+            <div class="w-5 h-5 border border-zinc-800 border-t-white rounded-full animate-spin"></div>
         </div>
 
         <div id="main-content" class="hidden">
@@ -138,11 +125,11 @@
             document.getElementById('arr-pct').innerText = total ? Math.round((arrived.length / total) * 100) + '%' : '0%';
 
             document.getElementById('not-arrived-list').innerHTML = notArrived.map(emp => `
-                <div onclick="toggle('${emp.name}', true)" class="name-tag tag-absent">${emp.name}</div>
+                <div onclick="toggle('${emp.name}', true)" class="name-btn status-absent">${emp.name}</div>
             `).join('');
 
             document.getElementById('arrived-list').innerHTML = arrived.map(emp => `
-                <div onclick="toggle('${emp.name}', false)" class="name-tag tag-present">${emp.name}</div>
+                <div onclick="toggle('${emp.name}', false)" class="name-btn status-present">${emp.name}</div>
             `).join('');
         }
 
