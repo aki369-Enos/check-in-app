@@ -1,140 +1,86 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
-        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
-        /* 報到後的亮晶晶效果 */
-        .card-active { 
-            background: linear-gradient(135deg, #dcfce7 0%, #ffffff 100%); 
-            border: 2px solid #22c55e !important; 
-            box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.2);
-            transform: translateY(-2px);
-        }
-        .check-anim { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    </style>
-</head>
-<body class="min-h-screen pb-12">
-    <div class="max-w-5xl mx-auto px-4 pt-8">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800 mb-2">點名系統</h1>
-            <div id="status-tag" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
-                <span id="status-dot" class="w-2 h-2 bg-slate-400 rounded-full mr-2"></span> 
-                <span id="status-text">初始化中...</span>
-            </div>
-        </header>
+/**
+ * 1. 處理「讀取」請求 (GET)
+ */
+function doGet() {
+  const data = getDashboardData();
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON)
+    .addHeader("Access-Control-Allow-Origin", "*");
+}
 
-        <div id="dashboard" class="hidden grid grid-cols-2 gap-4 mb-8">
-            <div class="glass rounded-3xl p-6 text-center shadow-sm">
-                <div id="arrived-count" class="text-5xl font-black text-green-500 mb-1">0</div>
-                <div class="text-slate-400 text-xs font-bold uppercase">已報到</div>
-            </div>
-            <div class="glass rounded-3xl p-6 text-center shadow-sm">
-                <div id="not-arrived-count" class="text-5xl font-black text-red-400 mb-1">0</div>
-                <div class="text-slate-400 text-xs font-bold uppercase">未報到</div>
-            </div>
-        </div>
+/**
+ * 2. 處理「寫入」請求 (POST)
+ */
+function doPost(e) {
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const result = updateCheckInStatus(params.name, params.isChecked);
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON)
+      .addHeader("Access-Control-Allow-Origin", "*");
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .addHeader("Access-Control-Allow-Origin", "*");
+  }
+}
 
-        <div id="main-content" class="hidden">
-            <div id="employee-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                </div>
-        </div>
+/**
+ * 3. 處理 CORS (OPTIONS)
+ */
+function doOptions(e) {
+  return ContentService.createTextOutput("")
+    .setMimeType(ContentService.MimeType.TEXT)
+    .addHeader("Access-Control-Allow-Origin", "*")
+    .addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+    .addHeader("Access-Control-Allow-Headers", "Content-Type");
+}
 
-        <div id="loading-view" class="flex flex-col items-center justify-center py-20">
-            <div class="w-12 h-12 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-400">正在同步雲端資料...</p>
-        </div>
-    </div>
+/**
+ * 4. 取得儀表板資料邏輯
+ */
+function getDashboardData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboardSheet = ss.getSheetByName('聚餐儀表板'); //
+  const employeeSheet = ss.getSheetByName('員工資料庫'); //
 
-    <script>
-        // 妳最新的 GAS 網址，已經幫妳填好了
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwTtT_QfAZLEdvvpJG7MhAB3d9o1kNAijYKVDqtt0FE4nCTY3iWVd2HlU5EN7JK5ghc/exec';
+  const arrivedCount = dashboardSheet.getRange('A2').getValue() || 0;
+  const notArrivedCount = dashboardSheet.getRange('B2').getValue() || 0;
 
-        // 初始化：抓取資料
-        async function init() {
-            updateStatus('connecting');
-            try {
-                // 使用 Google 認可的連線方式，加上快取打破機制
-                const response = await fetch(`${API_URL}?v=${Date.now()}`);
-                const data = await response.json();
-                
-                document.getElementById('loading-view').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                
-                render(data);
-                updateStatus('online');
-            } catch (err) {
-                console.error("連線錯誤:", err);
-                updateStatus('error');
-            }
-        }
+  // 取得員工名單與狀態 (假設 D 欄是姓名, A 欄是勾選框)
+  const lastRow = employeeSheet.getLastRow();
+  const names = employeeSheet.getRange(2, 4, lastRow - 1, 1).getValues(); // D 欄
+  const checks = employeeSheet.getRange(2, 1, lastRow - 1, 1).getValues(); // A 欄
 
-        // 渲染畫面
-        function render(data) {
-            document.getElementById('arrived-count').innerText = data.arrivedCount;
-            document.getElementById('not-arrived-count').innerText = data.notArrivedCount;
+  const employeeList = names.map((row, index) => {
+    return {
+      name: row[0],
+      isChecked: checks[index][0] === true || checks[index][0] === '已到'
+    };
+  });
 
-            const grid = document.getElementById('employee-grid');
-            grid.innerHTML = data.employeeList.map(emp => `
-                <div class="relative">
-                    <input type="checkbox" id="check-${emp.name}" class="hidden" 
-                           ${emp.isChecked ? 'checked' : ''} 
-                           onchange="handleCheck('${emp.name}', this.checked)">
-                    <label for="check-${emp.name}" 
-                           class="check-anim flex items-center justify-center p-4 rounded-2xl border border-slate-200 bg-white cursor-pointer select-none text-slate-700 font-medium hover:bg-slate-50 ${emp.isChecked ? 'card-active' : ''}">
-                        ${emp.name}
-                    </label>
-                </div>
-            `).join('');
-        }
+  return {
+    arrivedCount: arrivedCount,
+    notArrivedCount: notArrivedCount,
+    employeeList: employeeList
+  };
+}
 
-        // 處理勾選動作
-        async function handleCheck(name, isChecked) {
-            updateStatus('syncing');
-            const label = document.querySelector(`label[for="check-${name}"]`);
-            if (isChecked) label.classList.add('card-active');
-            else label.classList.remove('card-active');
+/**
+ * 5. 更新勾選狀態邏輯
+ */
+function updateCheckInStatus(name, isChecked) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const employeeSheet = ss.getSheetByName('員工資料庫');
+  const lastRow = employeeSheet.getLastRow();
+  const names = employeeSheet.getRange(2, 4, lastRow - 1, 1).getValues();
 
-            try {
-                // 發送 POST 請求到 Google 
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // 解決 Google 的安全性限制
-                    body: JSON.stringify({ name, isChecked })
-                });
-                
-                // 等待 1 秒後刷新數據，確保試算表已更新
-                setTimeout(init, 1000);
-            } catch (err) {
-                updateStatus('error');
-            }
-        }
-
-        function updateStatus(state) {
-            const dot = document.getElementById('status-dot');
-            const text = document.getElementById('status-text');
-            if (state === 'connecting') {
-                dot.className = "w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse";
-                text.innerText = "連線中...";
-            } else if (state === 'online') {
-                dot.className = "w-2 h-2 bg-green-500 rounded-full mr-2";
-                text.innerText = "雲端同步中";
-            } else if (state === 'syncing') {
-                dot.className = "w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-spin";
-                text.innerText = "儲存中...";
-            } else {
-                dot.className = "w-2 h-2 bg-red-500 rounded-full mr-2";
-                text.innerText = "連線失敗";
-            }
-        }
-
-        window.onload = init;
-    </script>
-</body>
-</html>
+  for (let i = 0; i < names.length; i++) {
+    if (names[i][0] === name) {
+      // 在 A 欄寫入勾選或取消
+      employeeSheet.getRange(i + 2, 1).setValue(isChecked);
+      return { status: 'success' };
+    }
+  }
+  return { status: 'not_found' };
+}
