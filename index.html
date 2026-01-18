@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點名系統 - 極致質感版</title>
+    <title>2026 點名戰情室 - 專業版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { background-color: #0a0a0a; font-family: 'Inter', sans-serif; color: #e2e8f0; }
         
-        body { 
-            background-color: #020617; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            color: #f1f5f9;
+        /* 三位一體數據區 */
+        .stat-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
         }
-
-        /* 數據看板區 */
-        .stat-box {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            padding: 24px 16px;
-            transition: all 0.3s ease;
+        .stat-card {
+            background: #171717;
+            padding: 20px 10px;
+            border-radius: 16px;
+            border: 1px solid #262626;
+            text-align: center;
         }
+        .stat-label { font-size: 0.7rem; color: #737373; font-weight: 800; letter-spacing: 0.1em; margin-bottom: 4px; }
+        .stat-value { font-size: 1.8rem; font-weight: 900; }
 
-        /* 名單網格 */
+        /* 80人小型方陣 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
-            gap: 14px; 
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); 
+            gap: 8px; 
         }
         
         .name-tag {
@@ -38,80 +40,59 @@
             justify-content: center;
             cursor: pointer;
             font-weight: 700;
-            border-radius: 20px;
-            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-            font-size: 1rem;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
             text-align: center;
-            padding: 8px;
+            padding: 4px;
         }
 
-        /* 未到：高質感暖橘 (帶微光) */
+        /* 未到：曜石亮白 (高對比) */
         .tag-absent {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
-            box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
         }
 
-        /* 已到：低調冷霧灰 */
+        /* 已到：深空幽靈灰 (低調) */
         .tag-present {
-            background: rgba(51, 65, 85, 0.3);
-            color: #64748b;
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            background: #171717;
+            color: #404040;
+            border: 1px solid #262626;
         }
 
-        .name-tag:hover { transform: translateY(-3px); }
-        .name-tag:active { transform: scale(0.92); }
-
-        .section-wrap {
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 32px;
-            padding: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        .label-text {
-            font-size: 0.75rem;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
+        .name-tag:active { transform: scale(0.9); }
+        .divider { border-color: #262626; margin: 3rem 0; }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-8">
     <div class="max-w-4xl mx-auto">
         
-        <div class="grid grid-cols-3 gap-5 mb-12">
-            <div class="stat-box text-center">
-                <div class="label-text">未到</div>
-                <div id="not-count" class="text-4xl font-black text-orange-500">0</div>
+        <div class="stat-header">
+            <div class="stat-card">
+                <div class="stat-label">未到</div>
+                <div id="not-count" class="stat-value text-white">0</div>
             </div>
-            <div class="stat-box text-center bg-white/[0.03]">
-                <div class="label-text text-slate-400">總人數</div>
-                <div id="total-count" class="text-4xl font-black text-slate-200">0</div>
+            <div class="stat-card">
+                <div class="stat-label">總人數</div>
+                <div id="total-count" class="stat-value text-slate-500">0</div>
             </div>
-            <div class="stat-box text-center">
-                <div class="label-text">已到</div>
-                <div id="arr-count" class="text-4xl font-black text-slate-500">0</div>
+            <div class="stat-card">
+                <div class="stat-label">已到</div>
+                <div id="arr-count" class="stat-value text-slate-700">0</div>
             </div>
         </div>
 
-        <div id="loading" class="text-center py-24">
-            <div class="inline-block w-10 h-10 border-2 border-slate-700 border-t-orange-500 rounded-full animate-spin"></div>
+        <div id="loading" class="text-center py-20">
+            <div class="inline-block w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
         </div>
 
-        <div id="main-content" class="hidden space-y-16">
-            <section>
-                <div id="not-arrived-list" class="member-grid"></div>
-            </section>
+        <div id="main-content" class="hidden">
+            <div id="not-arrived-list" class="member-grid"></div>
 
-            <section>
-                <div class="border-t border-slate-800/50 pt-10 mt-10">
-                    <div id="arrived-list" class="member-grid"></div>
-                </div>
-            </section>
+            <hr class="divider">
+
+            <div id="arrived-list" class="member-grid"></div>
         </div>
     </div>
 
