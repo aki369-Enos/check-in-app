@@ -3,125 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 點名戰情室 - Soft Sand Edition</title>
+    <title>2026 點名戰情室 - Claymorphism Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=SF+Pro+Display:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=SF+Pro+Display:wght@400;600;700&display=swap');
         
         body { 
-            /* 沙丘大地底色：燕麥米 */
-            background-color: #F7F3F0; 
-            font-family: -apple-system, "SF Pro Display", "Noto Sans TC", sans-serif;
-            color: #4A443F; /* 深可可色取代死黑 */
+            background-color: #F0F2F5; /* 淺灰底 */
+            font-family: 'Quicksand', -apple-system, "SF Pro Display", sans-serif;
+            color: #4A4A4A;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 數據看板 (復刻 image_43fb44 佈局) */
+        /* 數據看板 */
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 40px;
+            gap: 15px;
+            margin-bottom: 45px;
         }
         
         .stat-item {
-            background: #FFFFFF;
-            border-radius: 24px;
-            padding: 22px 5px;
+            background: #F0F2F5;
+            border-radius: 30px; /* 更圓潤的邊角 */
+            padding: 25px 10px;
             text-align: center;
-            box-shadow: 0 10px 20px rgba(74, 68, 63, 0.03); /* 極淡的大地色陰影 */
+            /* Claymorphism 陰影效果 */
+            box-shadow: 10px 10px 20px #D1D9E6, -10px -10px 20px #FFFFFF;
         }
 
-        .stat-label { font-size: 0.75rem; color: #A89F95; font-weight: 600; margin-bottom: 4px; }
-        .stat-value { font-size: 1.9rem; font-weight: 700; line-height: 1; }
-        .stat-pct { font-size: 0.8rem; color: #BCB4AC; margin-top: 4px; }
+        .stat-label { font-size: 0.7rem; color: #8C8C8C; font-weight: 500; margin-bottom: 6px; }
+        .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .stat-pct { font-size: 0.8rem; color: #B3B3B3; margin-top: 5px; }
 
         /* 格子系統 */
         .member-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); 
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+            gap: 15px;
         }
         
         .name-card {
             cursor: pointer;
-            padding: 16px 8px;
-            border-radius: 18px;
+            padding: 18px 8px;
+            border-radius: 25px; /* 超級圓潤 */
             text-align: center;
             font-size: 1rem;
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: all 0.3s ease-in-out;
             display: flex;
             align-items: center;
             justify-content: center;
-            letter-spacing: 0.02em;
-        }
-
-        /* 未到：暖潤陶土紅 (低飽和、環境光感) */
-        .card-absent {
-            background-color: #FCECE8; /* 柔和粉砂 */
-            color: #B25E50; /* 陶土紅 */
             font-weight: 700;
-            box-shadow: 0 6px 15px rgba(178, 94, 80, 0.08);
         }
 
-        /* 已到：淡雅麻布白 (容錯、不傷眼) */
+        /* 未到：暖橘色黏土塊 */
+        .card-absent {
+            background-color: #FFC0CB; /* 柔和淺粉 */
+            color: #E27D60; /* 暖橘紅 */
+            box-shadow: 8px 8px 16px rgba(226, 125, 96, 0.15), -8px -8px 16px #FFFFFF;
+        }
+
+        /* 已到：淺灰黏土塊 */
         .card-present {
-            background-color: rgba(255, 255, 255, 0.5);
-            color: #C2BBB4; /* 亞麻灰 */
-            font-weight: 400;
-            border: 1px solid rgba(188, 180, 172, 0.2);
+            background-color: #F0F2F5;
+            color: #B0B3BA; /* 淡灰 */
+            box-shadow: inset 5px 5px 10px #D1D9E6, inset -5px -5px 10px #FFFFFF;
         }
 
-        .name-card:active { transform: scale(0.9); opacity: 0.7; }
+        .name-card:active { 
+            transform: scale(0.95);
+            box-shadow: inset 3px 3px 6px #D1D9E6, inset -3px -3px 6px #FFFFFF;
+        }
         
         .section-header {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #8C847C;
-            margin: 35px 0 15px 10px;
-            display: flex;
-            align-items: center;
+            color: #8C8C8C;
+            margin: 40px 0 20px 0px;
+            text-align: center;
+            letter-spacing: 0.05em;
         }
-        .section-header::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: rgba(188, 180, 172, 0.2);
-            margin-left: 15px;
-        }
-
-        .divider { border-top: 1px solid rgba(188, 180, 172, 0.2); margin: 3rem 0; }
+        .divider { border: none; height: 1px; background-color: #E0E4EB; margin: 3rem 0; }
     </style>
 </head>
-<body class="p-6 md:p-12">
+<body class="p-6 md:p-14">
     <div class="max-w-4xl mx-auto">
         
         <div class="dashboard">
             <div class="stat-item">
                 <div class="stat-label">未到</div>
-                <div id="not-count" class="stat-value text-[#D97B6B]">0</div>
+                <div id="not-count" class="stat-value text-[#E27D60]">0</div>
                 <div id="not-pct" class="stat-pct">0%</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">總人數</div>
-                <div id="total-count" class="stat-value text-[#4A443F]">0</div>
+                <div id="total-count" class="stat-value text-[#4A4A4A]">0</div>
                 <div class="stat-pct">100%</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">已到</div>
-                <div id="arr-count" class="stat-value text-[#8DA68D]">0</div>
+                <div id="arr-count" class="stat-value text-[#6CB69E]">0</div>
                 <div id="arr-pct" class="stat-pct">0%</div>
             </div>
         </div>
 
         <div id="main-content">
-            <div class="section-header">WAITING / 待報到</div>
+            <div class="section-header">UNCHECKED / 待報到</div>
             <div id="not-arrived-list" class="member-grid"></div>
 
             <hr class="divider">
 
-            <div class="section-header">ARRIVED / 已入座</div>
+            <div class="section-header">CHECKED / 已入座</div>
             <div id="arrived-list" class="member-grid"></div>
         </div>
     </div>
@@ -167,7 +160,7 @@
             const emp = fullData.find(e => e.name === name);
             if (emp) {
                 emp.isChecked = targetState;
-                refreshUI(); // 立即更新 UI，速度感爆棚
+                refreshUI(); 
             }
             fetch(API_URL, {
                 method: 'POST',
