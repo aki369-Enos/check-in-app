@@ -2,96 +2,165 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2026 點名戰情室 - Industrial Steel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 點名系統 - 穩定修復版</title>
     <style>
+        /* 基礎設置 - 確保手機不跑版 */
         body { 
-            background-color: #F1F5F9; /* 冷調鋼鐵底色 */
-            font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
+            background-color: #F4F7F9; 
+            font-family: -apple-system, system-ui, sans-serif;
             color: #334155;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
+            margin: 0; padding: 20px;
         }
 
-        /* 數據看板 (復刻 image_43fb44 的專業感) */
+        /* 看板 - 簡單好讀 (參考 image_464163) */
         .dashboard {
             display: flex;
-            justify-content: space-around;
-            background: #FFFFFF;
-            border-bottom: 1px solid #E2E8F0;
-            padding: 20px 10px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .stat-item {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             text-align: center;
-            flex: 1;
         }
+        .stat-item { flex: 1; }
+        .stat-label { font-size: 12px; color: #94A3B8; margin-bottom: 5px; }
+        .stat-value { font-size: 28px; font-weight: 800; }
 
-        .stat-label { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .stat-value { font-size: 26px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
-        .stat-pct { font-size: 10px; color: #94A3B8; margin-top: 2px; }
-
-        .container { padding: 25px 15px; max-width: 800px; margin: 0 auto; }
-
-        /* 工業風格格子系統 */
+        /* 名單容器 - 這是關鍵！ */
+        .list-container { max-width: 600px; margin: 0 auto; }
+        
         .member-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); 
-            gap: 8px;
+            gap: 10px;
+            margin-bottom: 30px;
         }
         
+        /* 卡片設計 - 低飽和 Apple 風 */
         .name-card {
             cursor: pointer;
-            padding: 14px 4px;
+            padding: 15px 5px;
+            border-radius: 10px;
             text-align: center;
             font-size: 14px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #E2E8F0;
-            background: #FFFFFF;
             font-weight: 500;
-            position: relative;
+            border: 1px solid #E2E8F0;
+            background: #ffffff;
+            transition: 0.2s;
         }
 
-        /* 未到：冷調紅邊框 (工業警告感) */
+        /* 未到：冷調粉紅 (修正怪怪的紅色) */
         .card-absent {
-            border-left: 4px solid #EF4444; /* 強調紅線 */
-            color: #B91C1C;
-            background: linear-gradient(to right, #FEF2F2, #FFFFFF);
+            background-color: #FFF1F2;
+            color: #E11D48;
+            border-color: #FECDD3;
         }
 
-        /* 已到：鋼鐵灰 (精密完成感) */
+        /* 已到：低調鋼鐵灰 */
         .card-present {
-            border: 1px solid #F1F5F9;
-            color: #CBD5E1;
-            background: #F8FAFC;
+            background-color: #F8FAFC;
+            color: #94A3B8;
+            border-color: #F1F5F9;
         }
 
-        .name-card:active { transform: translateY(1px); background: #F1F5F9; }
-        
         .section-header {
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 700;
             color: #64748B;
-            margin: 30px 0 15px 0;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-bottom: 1px solid #E2E8F0;
-            padding-bottom: 5px;
+            margin: 20px 0 10px 0;
+            padding-left: 5px;
+            border-left: 4px solid #CBD5E1;
         }
-
-        .divider { display: none; } /* 用標題底線取代 */
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="stat-item">
-            <div class="stat-label">Absent</div>
-            <div id="not-count" class="stat-value" style="color: #EF4444;">0</div>
-            <div id="not-pct" class="stat-pct">0%</div>
+
+    <div class="list-container">
+        <div class="dashboard">
+            <div class="stat-item">
+                <div class="stat-label">未到</div>
+                <div id="not-count" class="stat-value" style="color: #E11D48;">0</div>
+            </div>
+            <div class="stat-item" style="border-left: 1px solid #F1F5F9; border-right: 1px solid #F1F5F9;">
+                <div class="stat-label">總人數</div>
+                <div id="total-count" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">已到</div>
+                <div id="arr-count" class="stat-value" style="color: #64748B;">0</div>
+            </div>
         </div>
-        <div class="stat-item" style="border-left: 1px solid #F1F5F9; border-right: 1px solid #F1F5F9;">
+
+        <div class="section-header">待追蹤 (未到)</div>
+        <div id="not-arrived-list" class="member-grid">
+            </div>
+
+        <div class="section-header">已確認 (入座)</div>
+        <div id="arrived-list" class="member-grid">
+            </div>
+    </div>
+
+    <script>
+        // 妳的 API 網址，我確認過是這串
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyBncPUbKeny0vZLeL0e391pvNAcbs_RQD1fDF-DhV9RqT6WOg4itsD51Va-pbG87XJ/exec';
+        let fullData = [];
+
+        // 初始化
+        function init() {
+            const script = document.createElement('script');
+            script.src = `${API_URL}?callback=render&t=${Date.now()}`;
+            document.body.appendChild(script);
+        }
+
+        // 渲染函數
+        window.render = function(data) {
+            if (!data || !data.employeeList) {
+                console.error("數據格式錯誤");
+                return;
+            }
+            fullData = data.employeeList;
+            refreshUI();
+        };
+
+        function refreshUI() {
+            const notArrived = fullData.filter(e => !e.isChecked);
+            const arrived = fullData.filter(e => e.isChecked);
+            
+            // 更新看板
+            document.getElementById('not-count').innerText = notArrived.length;
+            document.getElementById('arr-count').innerText = arrived.length;
+            document.getElementById('total-count').innerText = fullData.length;
+
+            // 更新未到名單
+            const notList = document.getElementById('not-arrived-list');
+            notList.innerHTML = notArrived.map(emp => `
+                <div onclick="toggle('${emp.name}', true)" class="name-card card-absent">${emp.name}</div>
+            `).join('');
+
+            // 更新已到名單
+            const arrList = document.getElementById('arrived-list');
+            arrList.innerHTML = arrived.map(emp => `
+                <div onclick="toggle('${emp.name}', false)" class="name-card card-present">${emp.name}</div>
+            `).join('');
+        }
+
+        // 切換狀態 (樂觀更新)
+        function toggle(name, targetState) {
+            const emp = fullData.find(e => e.name === name);
+            if (emp) {
+                emp.isChecked = targetState;
+                refreshUI(); // 先動畫面，保證快！
+            }
+            // 偷偷跟後台講
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ name: name, isChecked: targetState })
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
